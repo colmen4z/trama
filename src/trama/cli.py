@@ -15,8 +15,11 @@ def create_project_dir(
     base_path: Path
 ):
     project_dir = base_path / name if base_path.name != name else base_path
+    if project_dir.exists():
+        console.print(f"[red][ERROR][/red] [bright_red]Ya existe un proyecto con el nombre '{name}'[/bright_red]")
+        raise typer.Exit(code=1)
     project_dir.mkdir(parents=True, exist_ok=True)
-    console.print(f'[green][INFO][/green] Project initialized in [cyan]{project_dir}[/cyan]')
+    console.print(f'[green][INFO][/green] Proyecto iniciado en [cyan]{project_dir}[/cyan]')
     return project_dir
 
 
@@ -28,7 +31,7 @@ def ask(
     default_value: str = ""
 ) -> str:
     if note_text:
-        console.print(f'[bright_black][NOTE] {note_text}[/bright_black]')
+        console.print(f'[bright_black][NOTA] {note_text}[/bright_black]')
 
     value = Prompt.ask(prompt_text, default=default_value) if default_value else Prompt.ask(prompt_text)
     
@@ -45,36 +48,36 @@ def init():
 
     # Project settings prompts
     project_name = ask(
-        prompt_text='Enter the project name [red](required)[/red]',
-        error_msg='The project name is required',
-        note_text='You can just type . to name and create the project in the current directory',
+        prompt_text='Nombre del proyecto [red]*[/red]',
+        error_msg='El nombre del proyecto es obligatorio.',
+        note_text="Puede escribir solamente '.' para iniciar el proyecto en el directorio actual",
         is_required=True
     )
     project_description = ask(
-        prompt_text='Enter the project description [bright_black](not required)[/bright_black]',
+        prompt_text='Descripcion del proyecto',
         error_msg='',
         note_text='',
         is_required=False
     )
     project_author = ask(
-        prompt_text='Enter the project author name [bright_black](not required)[/bright_black]',
+        prompt_text='Autor del proyecto',
         error_msg='',
         note_text='',
         is_required=False
     )
     project_version = '0.0.1'
-    console.print(f'[green]Project version set {project_version}[/green] \n')
+    console.print(f'Version del proyecto configurada en [green]{project_version}[/green]\n')
 
     # Server settings prompts
     server_host = ask(
-        prompt_text='Enter the project server host [bright_black](not required)[/bright_black]',
+        prompt_text='Host del servidor',
         error_msg='',
         note_text='',
         is_required=False,
         default_value='127.0.0.1'
     )
     server_port = ask(
-        prompt_text='Enter the project server port [bright_black](not required)[/bright_black]',
+        prompt_text='Puerto del servidor',
         error_msg='',
         note_text='',
         is_required=False,
@@ -91,10 +94,10 @@ def init():
 
     create_project_dir(real_project_name, project_path)
 
-    templates_dir = Path(__file__).parent / 'blueprints' / 'project'
+    templates_dir = Path(__file__).parent / 'blueprints' / 'default_project'
 
     if not templates_dir.exists():
-        console.print(f'[red][ERROR][/red] [bright_red]Templates directory not found at {templates_dir}[/bright_red]')
+        console.print(f'[red][ERROR][/red] [bright_red]No se encontro el directorio de templates en {templates_dir}[/bright_red]')
         raise typer.Exit(code=1)
 
     env = Environment(loader=FileSystemLoader(str(templates_dir)))
@@ -102,7 +105,7 @@ def init():
     try:
         template = env.get_template("trama.yaml.j2")
     except Exception as e:
-        console.print(f'[red][ERROR][/red] [bright_red]Could not load trama.yaml.j2[/bright_red]')
+        console.print(f'[red][ERROR][/red] [bright_red] No se pudo cargar el archivo trama.yaml.j2[/bright_red]')
         raise typer.Exit(code=1)
 
     context = {
@@ -115,13 +118,13 @@ def init():
     }
 
     rendered_content = template.render(context)
-    output_file = project_path / "test.yaml"
+    output_file = project_path / "trama.yaml"
     output_file.write_text(rendered_content, encoding="utf-8")
 
-    console.print(f'[bold green]Successfully generated configuration at:[/bold green] [cyan]{output_file}[/cyan]')
+    console.print(f'[bold green]Configuracion del proyecto generada en [cyan]{output_file}[/cyan]')
 
 @app.command()
-def test():
+def module():
     pass
 
 
