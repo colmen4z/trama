@@ -1,0 +1,16 @@
+import uuid
+
+from pydantic import BaseModel
+
+class UserBase(BaseModel):
+	username: str
+
+class UserCreate(UserBase):
+	password: str
+
+class UserInDB(UserBase):
+	id: uuid.UUID
+	hashed_password: str
+
+	class Config:
+		from_attributes = True

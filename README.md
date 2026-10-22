@@ -1,0 +1,1 @@
+Trama es un CLI de codigo abierto diseñado para generar rapidamente scaffolding de aplicacion web modulares.

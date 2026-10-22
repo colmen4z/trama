@@ -1,0 +1,11 @@
+from fastapi import APIRouter, Request
+from fastapi.responses import HTMLResponse
+
+router = APIRouter(prefix='/dashboard', tags=['Dashboard'])
+
+@router.get('/', response_class=HTMLResponse)
+async def dashboard_page(request: Request):
+	return """
+		<h1>Hola</h1>
+		<a href="/auth/logout">cerrar sesion</a>
+	"""

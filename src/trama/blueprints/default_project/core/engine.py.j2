@@ -1,0 +1,28 @@
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from core.database import engine, Base
+from core.router import api_router
+from core.loader import load_config
+import uvicorn
+
+Base.metadata.create_all(bind=engine)
+
+config = load_config()
+
+app = FastAPI(
+	title=config['project']['name'],
+	description=config['project']['description'],
+	version=config['project']['version']
+)
+
+app.mount("/static", StaticFiles(directory='static'), name='static')
+
+app.include_router(api_router)
+
+def start_server():
+	uvicorn.run(
+		"core.engine:app",
+		host=config['server']['host'],
+		port=int(config['server']['port']),
+		reload=True
+	)

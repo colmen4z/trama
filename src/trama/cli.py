@@ -1,3 +1,4 @@
+import shutil
 from collections import defaultdict
 from pathlib import Path
 from typing import Annotated
@@ -65,7 +66,7 @@ def init():
         note_text='',
         is_required=False
     )
-    project_version = '0.0.1'
+    project_version = '0.1.0'
     console.print(f'Version del proyecto configurada en [green]{project_version}[/green]\n')
 
     # Server settings prompts
@@ -100,14 +101,6 @@ def init():
         console.print(f'[red][ERROR][/red] [bright_red]No se encontro el directorio de templates en {templates_dir}[/bright_red]')
         raise typer.Exit(code=1)
 
-    env = Environment(loader=FileSystemLoader(str(templates_dir)))
-
-    try:
-        template = env.get_template("trama.yaml.j2")
-    except Exception as e:
-        console.print(f'[red][ERROR][/red] [bright_red] No se pudo cargar el archivo trama.yaml.j2[/bright_red]')
-        raise typer.Exit(code=1)
-
     context = {
         "project_name": real_project_name,
         "project_description": project_description,
@@ -117,11 +110,31 @@ def init():
         "server_port": server_port,
     }
 
-    rendered_content = template.render(context)
-    output_file = project_path / "trama.yaml"
-    output_file.write_text(rendered_content, encoding="utf-8")
+    env = Environment(loader=FileSystemLoader(str(templates_dir)))
 
-    console.print(f'[bold green]Configuracion del proyecto generada en [cyan]{output_file}[/cyan]')
+    for src_file in templates_dir.rglob('*'):
+        if src_file.is_file():
+            rel_path = src_file.relative_to(templates_dir)
+
+            if src_file.suffix == '.j2':
+                dest_rel_path = rel_path.with_suffix('')
+                dest_file = project_path / dest_rel_path
+                dest_file.parent.mkdir(parents=True, exist_ok=True)
+                template_name = str(rel_path).replace("\\", "/")
+                try:
+                    template = env.get_template(template_name)
+                    rendered_content = template.render(context)
+                    dest_file.write_text(rendered_content, encoding='utf-8')
+                    console.print(f'[green][CREADO][/green] {dest_rel_path}')
+                except Exception as e:
+                    console.print(f'[red][ERROR][/red] [bright_red]Fallo en el render de {template_name}: {e}[/bright_red]')
+            else:
+                dest_file = project_path / rel_path
+                dest_file.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy(src_file, dest_file)
+                console.print(f'[green][COPIADO][/green] {rel_path}')
+
+    console.print(f'\n[bold green]Proyecto [cyan]{real_project_name}[/cyan] inicializado correctamente.[/bold green]')
 
 @app.command()
 def module():

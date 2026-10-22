@@ -1,0 +1,13 @@
+from fastapi import APIRouter, Depends
+from modules.auth.controllers import router as auth_router
+from modules.dashboard.controllers import router as dashboard_router
+from core.auth import get_current_user_from_cookie
+
+api_router = APIRouter()
+
+api_router.include_router(auth_router)
+
+api_router.include_router(
+	dashboard_router,
+	dependencies=[Depends(get_current_user_from_cookie)]
+)
