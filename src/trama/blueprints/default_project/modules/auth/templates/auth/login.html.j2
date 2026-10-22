@@ -10,7 +10,7 @@
     <div class="login-container">
         <a href="#">Trama</a>
         <p>{{ project_name }}</p>
-        <form>
+        <form action="/auth/login" method="post">
             <div class="input-group">
                 <label for="username">Usuario:</label>
                 <input type="text" id="username" name="username" required>
